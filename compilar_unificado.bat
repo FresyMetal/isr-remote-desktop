@@ -43,7 +43,7 @@ echo Esto puede tardar 5-10 minutos, por favor espera...
 echo.
 
 REM Compilar aplicación unificada
-py -m PyInstaller --onefile --windowed --name ISR_Remote_Desktop --icon=icon.ico isr_remote.py >build\build.log 2>&1
+py -m PyInstaller --onefile --windowed --name ISR_Remote_Desktop --icon=icon.ico --hidden-import=mss --hidden-import=mss.windows --hidden-import=pynput --hidden-import=pynput.mouse --hidden-import=pynput.keyboard --hidden-import=PIL --hidden-import=PIL.Image --hidden-import=zstandard isr_remote.py >build\build.log 2>&1
 
 if exist dist\ISR_Remote_Desktop.exe (
     echo.
