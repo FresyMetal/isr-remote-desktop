@@ -62,7 +62,7 @@ class ServerThread(QThread):
             
             # Iniciar servidor
             self.server = RemoteDesktopServer('0.0.0.0', self.port, self.password, self.monitor)
-            self.server.serve_forever()
+            self.server.start()
             
         except Exception as e:
             self.error_signal.emit(f"Error en el servidor: {str(e)}")
