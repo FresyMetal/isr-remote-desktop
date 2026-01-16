@@ -19,11 +19,38 @@ class ConnectionCodeManager:
     """Gestiona los códigos de conexión"""
     
     def __init__(self, registry_file: str = "connection_registry.json", 
-                 registry_server: str = "http://77.225.201.4:8080"):
+                 registry_server: str = None):
         self.registry_file = registry_file
+        # Detección automática de servidor central
+        if registry_server is None:
+            registry_server = self._detect_registry_server()
         self.registry_server = registry_server
         self.use_central_server = True  # Usar servidor central por defecto
         self.registry = self._load_registry()
+    
+    def _detect_registry_server(self) -> str:
+        """
+        Detecta automáticamente el servidor de registro
+        Usa IP local si está en la misma red, IP pública si está fuera
+        """
+        local_server = "http://192.168.0.57:8080"
+        public_server = "http://77.225.201.4:8080"
+        
+        # Obtener IP local del cliente
+        try:
+            local_ip = self.get_local_ip()
+            
+            # Si estamos en la red 192.168.0.x, usar servidor local
+            if local_ip.startswith("192.168.0."):
+                print(f"[Registro] Detectada red local, usando {local_server}")
+                return local_server
+            else:
+                print(f"[Registro] Fuera de red local, usando {public_server}")
+                return public_server
+        except:
+            # Por defecto, intentar servidor público
+            print(f"[Registro] No se pudo detectar red, usando {public_server}")
+            return public_server
     
     def _load_registry(self) -> dict:
         """Carga el registro de códigos local"""

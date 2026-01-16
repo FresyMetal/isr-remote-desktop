@@ -1,5 +1,45 @@
 # Historial de Cambios
 
+## Versión 3.0.4 - 16 de enero de 2026
+
+### 🌐 Detección Automática de Servidor Central
+
+**Problema**: 
+Desde dentro de la red local no se podía acceder al servidor central usando la IP pública (77.225.201.4:8080) debido a NAT loopback. El servidor está en la red local (192.168.0.57) pero tiene IP pública.
+
+**Solución**:
+Implementada detección automática que:
+- Detecta si el cliente está en la red local (192.168.0.x)
+- Usa **IP local** (192.168.0.57:8080) cuando está en la misma red
+- Usa **IP pública** (77.225.201.4:8080) cuando está fuera de la red
+
+**Código agregado**:
+```python
+def _detect_registry_server(self) -> str:
+    local_server = "http://192.168.0.57:8080"
+    public_server = "http://77.225.201.4:8080"
+    
+    local_ip = self.get_local_ip()
+    
+    if local_ip.startswith("192.168.0."):
+        return local_server  # Misma red
+    else:
+        return public_server  # Fuera de la red
+```
+
+**Resultado**: 
+✅ El sistema ahora funciona tanto desde la red local como desde Internet sin configuración manual
+
+---
+
+### 🔧 Archivos Modificados
+
+- ✅ `connection_code.py` - Agregada detección automática de servidor
+- ✅ `test_connection.py` - Actualizado para usar detección automática
+- ✅ `isr_remote.py` - Actualizada versión a 3.0.4
+
+---
+
 ## Versión 3.0.3 - 16 de enero de 2026
 
 ### 🐛 Correcciones de Bugs Críticos

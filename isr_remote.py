@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-ISR Remote Desktop - Aplicación Unificada v3.0.3
+ISR Remote Desktop - Aplicación Unificada v3.0.4
 Permite controlar otros equipos y ser controlado desde una sola aplicación
+
+Cambios en v3.0.4:
+- Detección automática de servidor central (IP local vs IP pública)
+- Usa 192.168.0.57:8080 cuando está en la red local
+- Usa 77.225.201.4:8080 cuando está fuera de la red
+- Soluciona problema de NAT loopback
 
 Cambios en v3.0.3:
 - Corregido bug que colgaba la aplicación al detener el servidor
