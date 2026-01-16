@@ -1,0 +1,22 @@
+# Aplicación de Escritorio Remoto - Dependencias
+
+# Interfaz gráfica
+PyQt6>=6.10.0
+
+# Procesamiento de imágenes
+Pillow>=10.0.0
+
+# Captura de pantalla
+mss>=10.0.0
+
+# Control de entrada (teclado/ratón)
+pynput>=1.8.0
+
+# Gestión del portapapeles
+pyperclip>=1.11.0
+
+# Compresión de datos
+zstandard>=0.25.0
+
+# Criptografía y seguridad
+cryptography>=42.0.0
