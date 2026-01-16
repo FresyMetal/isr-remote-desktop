@@ -121,9 +121,16 @@ class RemoteDesktopServer:
             except:
                 pass
         
-        # Cerrar socket del servidor
+        # Cerrar socket del servidor (shutdown primero para desbloquear accept())
         if self.server_socket:
-            self.server_socket.close()
+            try:
+                self.server_socket.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+            try:
+                self.server_socket.close()
+            except:
+                pass
         
         print("[Servidor] Detenido")
     

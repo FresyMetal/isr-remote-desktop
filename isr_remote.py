@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-ISR Remote Desktop - Aplicación Unificada
+ISR Remote Desktop - Aplicación Unificada v3.0.3
 Permite controlar otros equipos y ser controlado desde una sola aplicación
+
+Cambios en v3.0.3:
+- Corregido bug que colgaba la aplicación al detener el servidor
+- Agregada guía de configuración de port forwarding para conexión desde Internet
+- Agregado script de prueba de conectividad
 """
 
 import sys
@@ -306,7 +311,11 @@ class ISRRemoteDesktop(QMainWindow):
             "2. Comparte tu código con quien quiera controlarte<br>"
             "3. Espera a que se conecten<br>"
             "<br>"
-            "<b>Nota:</b> El servidor debe ejecutarse como administrador para que funcione correctamente."
+            "<b>Nota:</b> El servidor debe ejecutarse como administrador para que funcione correctamente.<br>"
+            "<br>"
+            "<b>Conexión desde Internet:</b><br>"
+            "Para permitir conexiones desde otras redes (Internet), necesitas configurar <b>Port Forwarding</b> "
+            "en tu router. Lee el archivo <b>CONFIGURAR_PORT_FORWARDING.md</b> para instrucciones detalladas."
         )
         instructions.setWordWrap(True)
         layout.addWidget(instructions)
@@ -429,7 +438,12 @@ class ISRRemoteDesktop(QMainWindow):
         """Detiene el servidor"""
         if self.server_thread:
             self.server_thread.stop()
-            self.server_thread.wait()
+            # Esperar máximo 3 segundos para que el thread termine
+            self.server_thread.wait(3000)  # 3000 ms = 3 segundos
+            if self.server_thread.isRunning():
+                # Si aún está corriendo, terminarlo forzosamente
+                self.server_thread.terminate()
+                self.server_thread.wait(1000)
             self.server_thread = None
         
         self.start_server_btn.setEnabled(True)

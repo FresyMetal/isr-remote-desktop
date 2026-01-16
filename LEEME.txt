@@ -1,0 +1,269 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║                      ISR REMOTE DESKTOP v3.0.3                         ║
+║                                                                        ║
+║          Aplicación de Escritorio Remoto Unificada para Windows       ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+CARACTERÍSTICAS
+===============
+
+✓ Aplicación unificada: controla y permite ser controlado desde un solo programa
+✓ Transferencia bidireccional de archivos con verificación de integridad
+✓ Sincronización bidireccional del portapapeles
+✓ Múltiples sesiones simultáneas
+✓ Encriptación AES-256-GCM para seguridad
+✓ Compresión Zstandard + JPEG para rendimiento
+✓ Códigos de conexión tipo AnyDesk (ISR-XXXXXXXX)
+✓ Servidor central de registro para conexión desde cualquier red
+✓ Interfaz gráfica intuitiva con pestañas
+✓ Configuración de contraseña desde la GUI
+✓ Sin necesidad de OAuth o cuentas obligatorias
+
+
+NOVEDADES EN v3.0.3
+===================
+
+🐛 CORRECCIONES:
+- ✓ Corregido bug que colgaba la aplicación al detener el servidor
+- ✓ Mejorado el cierre del servidor con timeout y terminación forzosa
+
+📚 DOCUMENTACIÓN:
+- ✓ Agregada guía completa de configuración de port forwarding
+- ✓ Agregado script de prueba de conectividad (test_connection.py)
+- ✓ Instrucciones para conexión desde Internet en la interfaz
+
+🌐 CONEXIÓN DESDE INTERNET:
+- ✓ El sistema ya soporta conexión desde cualquier red
+- ✓ Requiere configurar port forwarding en tu router
+- ✓ Lee CONFIGURAR_PORT_FORWARDING.md para instrucciones
+
+
+INSTALACIÓN Y USO
+=================
+
+1. INSTALAR DEPENDENCIAS
+   ------------------------
+   Ejecuta: instalar_dependencias.bat
+   
+   Esto instalará:
+   - PyQt6 (interfaz gráfica)
+   - mss (captura de pantalla)
+   - pynput (control de mouse/teclado)
+   - Pillow (procesamiento de imágenes)
+   - zstandard (compresión)
+   - pyperclip (portapapeles)
+   - cryptography (encriptación)
+
+2. COMPILAR LA APLICACIÓN
+   -----------------------
+   Ejecuta: compilar_unificado.bat
+   
+   Esto creará:
+   - dist/ISR_Remote_Desktop.exe (ejecutable)
+   - build/ (archivos temporales)
+
+3. EJECUTAR LA APLICACIÓN
+   -----------------------
+   
+   IMPORTANTE: Para permitir control (servidor), ejecuta como ADMINISTRADOR:
+   - Clic derecho en ISR_Remote_Desktop.exe
+   - "Ejecutar como administrador"
+   
+   Para solo controlar otros equipos, no es necesario ser administrador.
+
+4. CONFIGURAR (OPCIONAL)
+   ----------------------
+   
+   Clic en "⚙️ Configuración" para ajustar:
+   - Puerto del servidor (default: 5900)
+   - Contraseña de acceso
+   - Monitor a capturar
+   - Calidad de imagen
+   - FPS máximo
+   - Inicio automático del servidor
+
+
+USO BÁSICO
+==========
+
+PERMITIR QUE TE CONTROLEN (SERVIDOR)
+-------------------------------------
+
+1. Abre ISR Remote Desktop como ADMINISTRADOR
+2. Ve a la pestaña "🖥️ Permitir Control"
+3. Clic en "▶️ Iniciar Servidor"
+4. Comparte tu código (ej: ISR-12345678) con quien quiera controlarte
+5. Espera a que se conecten
+
+Para detener: Clic en "⏹️ Detener Servidor"
+
+
+CONTROLAR OTRO EQUIPO (CLIENTE)
+--------------------------------
+
+1. Abre ISR Remote Desktop (no requiere administrador)
+2. Ve a la pestaña "🖱️ Controlar Equipo"
+3. Introduce el código o IP del equipo remoto
+4. Clic en "🔗 Conectar"
+5. Controla el equipo remoto
+
+Para desconectar: Cierra la ventana de conexión
+
+
+CONEXIÓN DESDE INTERNET
+========================
+
+Para conectar desde cualquier red (no solo tu WiFi local):
+
+1. CONFIGURA PORT FORWARDING en tu router
+   Lee: CONFIGURAR_PORT_FORWARDING.md
+
+2. VERIFICA TU CONFIGURACIÓN
+   Ejecuta: python test_connection.py
+
+3. USA EL CÓDIGO DE CONEXIÓN
+   El sistema resolverá automáticamente la IP pública
+
+
+VERIFICAR CONECTIVIDAD
+======================
+
+Ejecuta el script de prueba:
+
+   python test_connection.py
+
+Este script verificará:
+- ✓ IP local
+- ✓ IP pública
+- ✓ Conexión con servidor central
+- ✓ Registro de códigos
+- ✓ Resolución de códigos
+- ✓ Servidor local activo
+- ✓ Firewall configurado
+
+
+SOLUCIÓN DE PROBLEMAS
+=====================
+
+PROBLEMA: "ModuleNotFoundError: No module named 'mss'"
+SOLUCIÓN: Recompila con compilar_unificado.bat actualizado
+
+PROBLEMA: "La aplicación se cuelga al detener el servidor"
+SOLUCIÓN: Actualiza a v3.0.3 (este problema está corregido)
+
+PROBLEMA: "No puedo conectar desde otra red"
+SOLUCIÓN: 
+1. Configura port forwarding en tu router
+2. Lee CONFIGURAR_PORT_FORWARDING.md
+3. Verifica con test_connection.py
+
+PROBLEMA: "No puedo conectar en la misma red"
+SOLUCIÓN:
+1. Verifica que el servidor esté activo
+2. Ejecuta como administrador:
+   New-NetFirewallRule -DisplayName "ISR Remote Desktop" -Direction Inbound -LocalPort 5900 -Protocol TCP -Action Allow
+3. Verifica con: netstat -an | findstr 5900
+
+PROBLEMA: "Error de autenticación"
+SOLUCIÓN: Verifica que la contraseña sea correcta en ambos equipos
+
+
+REQUISITOS DEL SISTEMA
+======================
+
+- Windows 10/11 (64-bit)
+- Python 3.8 o superior (para compilar)
+- 4 GB RAM mínimo
+- Conexión a Internet (para servidor central)
+
+
+ARQUITECTURA
+============
+
+COMPONENTES:
+- isr_remote.py: Aplicación principal unificada
+- server.py: Componente servidor (captura y control)
+- client.py: Componente cliente (visualización)
+- protocol.py: Protocolo de comunicación
+- connection_code.py: Sistema de códigos de conexión
+- file_transfer.py: Transferencia de archivos
+- security.py: Encriptación y seguridad
+
+SERVIDOR CENTRAL:
+- Ubicación: 77.225.201.4:8080
+- Función: Mapea códigos ISR-XXXXXXXX a IPs públicas
+- Permite conexión desde cualquier red
+
+
+SEGURIDAD
+=========
+
+- Encriptación AES-256-GCM para todas las comunicaciones
+- Autenticación opcional con contraseña
+- Verificación SHA-256 de archivos transferidos
+- El servidor debe ejecutarse como administrador (seguridad de Windows)
+
+RECOMENDACIONES:
+- Usa contraseña fuerte
+- Cambia el puerto default (5900) a otro menos común
+- Cierra el servidor cuando no lo uses
+- Mantén Windows actualizado
+
+
+ARCHIVOS IMPORTANTES
+====================
+
+EJECUTABLES:
+- dist/ISR_Remote_Desktop.exe: Aplicación compilada
+
+SCRIPTS:
+- instalar_dependencias.bat: Instala Python packages
+- compilar_unificado.bat: Compila la aplicación
+- test_connection.py: Verifica conectividad
+
+DOCUMENTACIÓN:
+- LEEME.txt: Este archivo
+- CONFIGURAR_PORT_FORWARDING.md: Guía de port forwarding
+- SOLUCION_CONEXION.md: Solución de problemas de conexión
+
+CÓDIGO FUENTE:
+- isr_remote.py: Aplicación principal
+- server.py: Servidor
+- client.py: Cliente
+- protocol.py: Protocolo
+- connection_code.py: Códigos de conexión
+- file_transfer.py: Transferencia de archivos
+- security.py: Seguridad
+
+
+REPOSITORIO
+===========
+
+GitHub: https://github.com/FresyMetal/isr-remote-desktop
+
+Para reportar bugs o sugerir mejoras:
+https://github.com/FresyMetal/isr-remote-desktop/issues
+
+
+LICENCIA
+========
+
+Este software es de código abierto.
+Consulta el repositorio para más detalles.
+
+
+CONTACTO
+========
+
+Desarrollado por: ISR Comunicaciones
+Versión: 3.0.3
+Fecha: 16 de enero de 2026
+
+
+═══════════════════════════════════════════════════════════════════════
+
+¡Gracias por usar ISR Remote Desktop!
+
+═══════════════════════════════════════════════════════════════════════

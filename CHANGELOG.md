@@ -1,5 +1,168 @@
 # Historial de Cambios
 
+## Versión 3.0.3 - 16 de enero de 2026
+
+### 🐛 Correcciones de Bugs Críticos
+
+#### Bug de Cierre del Servidor
+
+**Problema**: 
+La aplicación se colgaba al hacer clic en "Detener Servidor" y había que forzar el cierre.
+
+**Causa**: 
+- El servidor tenía un `accept()` bloqueante en el socket
+- Cuando se llamaba a `stop()`, solo se cambiaba `running = False` pero el socket seguía esperando conexiones
+- El thread nunca terminaba, causando que la aplicación se colgara
+
+**Solución**:
+- Agregado `socket.shutdown(socket.SHUT_RDWR)` antes de `socket.close()` para desbloquear `accept()`
+- Implementado timeout de 3 segundos en `thread.wait(3000)`
+- Agregada terminación forzosa con `thread.terminate()` si el thread no responde
+
+**Resultado**: 
+✅ El servidor ahora se detiene correctamente sin colgar la aplicación
+
+---
+
+### 📚 Documentación Nueva
+
+#### Guía de Port Forwarding
+
+**Nuevo archivo**: `CONFIGURAR_PORT_FORWARDING.md`
+
+**Contenido**:
+- Instrucciones paso a paso para configurar port forwarding en el router
+- Configuración específica por marca (TP-Link, Netgear, D-Link, Asus, Linksys)
+- Guía de configuración de IP estática
+- Verificación de puerto abierto
+- Recomendaciones de seguridad
+- Solución de problemas comunes
+
+**Propósito**: 
+Permitir conexiones desde Internet (no solo red local)
+
+---
+
+#### Script de Verificación de Conectividad
+
+**Nuevo archivo**: `test_connection.py`
+
+**Funcionalidad**:
+- ✓ Prueba IP local
+- ✓ Prueba IP pública
+- ✓ Verifica conexión con servidor central (77.225.201.4:8080)
+- ✓ Prueba registro de códigos
+- ✓ Prueba resolución de códigos
+- ✓ Verifica servidor local activo
+- ✓ Verifica configuración de firewall
+- ✓ Genera reporte completo de diagnóstico
+
+**Uso**:
+```bash
+python test_connection.py
+```
+
+**Resultado**: 
+Reporte completo del estado de conectividad
+
+---
+
+### 🌐 Mejoras de Conectividad
+
+#### Instrucciones en la Interfaz
+
+**Agregado**: 
+Mensaje informativo en la pestaña "Permitir Control" sobre port forwarding:
+
+> "Para permitir conexiones desde otras redes (Internet), necesitas configurar Port Forwarding en tu router. Lee el archivo CONFIGURAR_PORT_FORWARDING.md para instrucciones detalladas."
+
+**Propósito**: 
+Informar al usuario que el sistema ya soporta conexión desde Internet, pero requiere configuración del router
+
+---
+
+### 🔧 Cambios Técnicos
+
+#### server.py
+```python
+def stop(self):
+    self.running = False
+    
+    # Cerrar socket del servidor (shutdown primero para desbloquear accept())
+    if self.server_socket:
+        try:
+            self.server_socket.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
+        try:
+            self.server_socket.close()
+        except:
+            pass
+```
+
+#### isr_remote.py
+```python
+def stop_server(self):
+    if self.server_thread:
+        self.server_thread.stop()
+        # Esperar máximo 3 segundos para que el thread termine
+        self.server_thread.wait(3000)
+        if self.server_thread.isRunning():
+            # Si aún está corriendo, terminarlo forzosamente
+            self.server_thread.terminate()
+            self.server_thread.wait(1000)
+        self.server_thread = None
+```
+
+---
+
+### 📝 Archivos Actualizados
+
+- ✅ `server.py` - Corregido método `stop()`
+- ✅ `isr_remote.py` - Corregido método `stop_server()` con timeout
+- ✅ `LEEME.txt` - Actualizado con información de v3.0.3
+- ✅ `CHANGELOG.md` - Este archivo
+
+### 📝 Archivos Nuevos
+
+- ✅ `CONFIGURAR_PORT_FORWARDING.md` - Guía de port forwarding
+- ✅ `test_connection.py` - Script de verificación
+
+---
+
+## Versión 3.0.2 - 16 de enero de 2026
+
+### 🐛 Correcciones
+
+- **Corregido**: Error "ModuleNotFoundError: No module named 'mss'" al ejecutar .exe compilado
+  - Agregados hidden-imports en PyInstaller para `mss`, `pynput`, `PIL`, `zstandard`
+  - Actualizado `compilar_unificado.bat` con parámetros correctos
+
+### 📚 Documentación
+
+- **Nuevo**: `SOLUCION_CONEXION.md` - Guía de solución de problemas de conexión
+
+---
+
+## Versión 3.0.1 - 16 de enero de 2026
+
+### 🔧 Mejoras
+
+- Optimizaciones menores en la interfaz
+- Mejoras en mensajes de error
+
+---
+
+## Versión 3.0.0 - 16 de enero de 2026
+
+### ✨ Características Principales
+
+- **Aplicación Unificada**: Fusión de servidor y cliente en una sola aplicación
+- **Configuración desde GUI**: Configuración de contraseña desde la interfaz
+- **Servidor Central de Registro**: Implementado en 77.225.201.4:8080
+
+---
+
 ## Versión 1.2 - 15 de enero de 2026
 
 ### 🐛 Correcciones Críticas
