@@ -645,23 +645,41 @@ def main():
     code_manager = get_code_manager()
     connection_code = code_manager.generate_code(args.code if args.code else None)
     
-    # Obtener IP local
+    # Obtener IPs
     local_ip = code_manager.get_local_ip()
+    public_ip = code_manager.get_public_ip()
     
-    # Registrar el código
-    code_manager.register_code(connection_code, local_ip, args.port, connection_code)
+    # Probar servidor central
+    central_server_ok = code_manager.test_central_server()
+    
+    # Registrar el código (usa IP pública si es diferente de la local)
+    register_ip = public_ip if public_ip != local_ip else local_ip
+    code_manager.register_code(connection_code, register_ip, args.port, connection_code)
     
     print("========================================")
-    print("  SERVIDOR DE ESCRITORIO REMOTO")
+    print("  SERVIDOR DE ESCRITORIO REMOTO - ISR")
     print("========================================")
     print(f"Código de conexión: {connection_code}")
     print(f"IP local: {local_ip}:{args.port}")
+    if public_ip != local_ip:
+        print(f"IP pública: {public_ip}:{args.port}")
     print(f"Monitor: {args.monitor}")
+    print("")
+    if central_server_ok:
+        print("✓ Servidor central: Conectado")
+        print(f"  URL: {code_manager.registry_server}")
+    else:
+        print("⚠ Servidor central: No disponible (usando registro local)")
     print("========================================")
     print("")
     print("Para conectar desde el cliente:")
     print(f"  - Usa el código: {connection_code}")
-    print(f"  - O usa la IP: {local_ip}:{args.port}")
+    if central_server_ok:
+        print(f"  - Funciona desde cualquier red")
+    else:
+        print(f"  - O usa la IP: {local_ip}:{args.port} (misma red)")
+        if public_ip != local_ip:
+            print(f"  - O usa la IP: {public_ip}:{args.port} (desde Internet)")
     print("")
     print("Presiona Ctrl+C para detener el servidor")
     print("")
