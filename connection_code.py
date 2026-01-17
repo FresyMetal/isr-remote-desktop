@@ -38,7 +38,11 @@ class ConnectionCodeManager:
         
         # Obtener IP local del cliente
         try:
-            local_ip = self.get_local_ip()
+            # Obtener IP local sin usar self.get_local_ip() para evitar dependencia circular
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
             
             # Si estamos en la red 192.168.0.x, usar servidor local
             if local_ip.startswith("192.168.0."):

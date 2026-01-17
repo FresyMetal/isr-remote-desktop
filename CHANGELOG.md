@@ -1,5 +1,69 @@
 # Historial de Cambios
 
+## Versión 3.0.5 - 16 de enero de 2026
+
+### 🐛 Corrección de Error Crítico
+
+**Problema**: 
+La aplicación fallaba al iniciar con error en la línea 33 de `isr_remote.py`. El error era causado por una dependencia circular en `connection_code.py` donde el método `_detect_registry_server()` llamaba a `self.get_local_ip()` durante la inicialización de la clase, pero ese método aún no estaba disponible.
+
+**Solución**:
+Reescrito el método `_detect_registry_server()` para obtener la IP local directamente usando sockets, sin depender de `self.get_local_ip()`.
+
+**Código corregido**:
+```python
+def _detect_registry_server(self) -> str:
+    # Obtener IP local sin usar self.get_local_ip()
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    local_ip = s.getsockname()[0]
+    s.close()
+    
+    if local_ip.startswith("192.168.0."):
+        return "http://192.168.0.57:8080"
+    else:
+        return "http://77.225.201.4:8080"
+```
+
+---
+
+### 🐧 Soporte para Servidor Linux
+
+**Agregados**:
+- ✅ `CONFIGURAR_SERVIDOR_LINUX.md` - Guía completa de configuración
+- ✅ `test_server_linux.py` - Script de verificación del servidor
+
+**Características del script de verificación**:
+- Verifica versión de Python y dependencias
+- Verifica que el servidor esté corriendo localmente
+- Verifica que el puerto 8080 esté escuchando
+- Verifica configuración del firewall
+- Obtiene IP pública del servidor
+- Verifica acceso desde Internet
+- Prueba registro y resolución de códigos
+- Verifica servicio systemd
+
+**Uso**:
+```bash
+cd /opt/isr-remote-desktop
+python3 test_server_linux.py
+```
+
+---
+
+### 🔧 Archivos Modificados
+
+- ✅ `connection_code.py` - Corregido método `_detect_registry_server()`
+- ✅ `isr_remote.py` - Actualizada versión a 3.0.5
+- ✅ `CHANGELOG.md` - Documentados cambios de v3.0.5
+
+### 🆕 Archivos Nuevos
+
+- ✅ `CONFIGURAR_SERVIDOR_LINUX.md` - Guía de configuración del servidor
+- ✅ `test_server_linux.py` - Script de verificación del servidor
+
+---
+
 ## Versión 3.0.4 - 16 de enero de 2026
 
 ### 🌐 Detección Automática de Servidor Central

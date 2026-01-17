@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-ISR Remote Desktop - Aplicación Unificada v3.0.4
+ISR Remote Desktop - Aplicación Unificada v3.0.5
 Permite controlar otros equipos y ser controlado desde una sola aplicación
+
+Cambios en v3.0.5:
+- Corregido error de dependencia circular en connection_code.py
+- Agregada guía de configuración para servidor Linux con IP pública
+- Agregado script de verificación del servidor (test_server_linux.py)
+- Simplificada detección de red para evitar errores de inicialización
 
 Cambios en v3.0.4:
 - Detección automática de servidor central (IP local vs IP pública)
