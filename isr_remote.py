@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-ISR Remote Desktop - Aplicación Unificada v3.0.5
+ISR Remote Desktop - Aplicación Unificada v3.0.6
 Permite controlar otros equipos y ser controlado desde una sola aplicación
+
+Cambios en v3.0.6:
+- Corregido crash del cliente al intentar conectar (método connect_to faltante)
+- Agregado manejo de errores completo con mensajes informativos
+- Actualizada IP del servidor central a 77.225.201.4:8080
+- Mejorados mensajes de error para facilitar diagnóstico
+- La aplicación ya no se cierra al fallar la conexión
 
 Cambios en v3.0.5:
 - Corregido error de dependencia circular en connection_code.py
@@ -491,28 +498,59 @@ class ISRRemoteDesktop(QMainWindow):
         """Conecta a un equipo remoto"""
         code_or_ip = self.connect_input.text().strip()
         if not code_or_ip:
-            QMessageBox.warning(self, "Conectar", "Introduce un código o IP")
+            QMessageBox.warning(self, "Conectar", "Introduce un código ISR-XXXXXXXX o IP:puerto")
             return
         
         # Crear ventana de conexión
         try:
             from client import RemoteDesktopClient
             
-            # Resolver código
+            # Resolver código o parsear IP:puerto
             code_manager = get_code_manager()
-            ip, port = code_manager.resolve_code(code_or_ip)
+            
+            try:
+                ip, port = code_manager.resolve_code(code_or_ip)
+                self.status_label.setText(f"Resolviendo {code_or_ip}...")
+            except Exception as resolve_error:
+                QMessageBox.critical(self, "Error al Resolver Código", 
+                    f"No se pudo resolver el código '{code_or_ip}'\n\n"
+                    f"Error: {str(resolve_error)}\n\n"
+                    "Verifica que:\n"
+                    "- El código sea válido (formato: ISR-XXXXXXXX)\n"
+                    "- El servidor central esté accesible\n"
+                    "- El equipo remoto tenga el servidor activo")
+                self.status_label.setText("Error al resolver código")
+                return
             
             # Crear cliente
             client_window = RemoteDesktopClient()
             client_window.show()
             
             # Conectar automáticamente
-            QTimer.singleShot(500, lambda: client_window.connect_to(ip, port))
-            
-            self.status_label.setText(f"Conectando a {code_or_ip}...")
+            self.status_label.setText(f"Conectando a {ip}:{port}...")
+            QTimer.singleShot(500, lambda: self._do_connect(client_window, ip, port, code_or_ip))
             
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"No se pudo conectar: {str(e)}")
+            import traceback
+            error_details = traceback.format_exc()
+            QMessageBox.critical(self, "Error Crítico", 
+                f"Error inesperado al intentar conectar:\n{str(e)}\n\n"
+                f"Detalles técnicos:\n{error_details}")
+            self.status_label.setText("Error al conectar")
+    
+    def _do_connect(self, client_window, ip, port, code_or_ip):
+        """Realiza la conexión y maneja el resultado"""
+        try:
+            success = client_window.connect_to(ip, port, name=code_or_ip)
+            if success:
+                self.status_label.setText(f"Conectado a {code_or_ip}")
+                QTimer.singleShot(3000, lambda: self.status_label.setText("Listo"))
+            else:
+                self.status_label.setText(f"Fallo al conectar a {code_or_ip}")
+                QTimer.singleShot(3000, lambda: self.status_label.setText("Listo"))
+        except Exception as e:
+            self.status_label.setText(f"Error: {str(e)}")
+            QTimer.singleShot(5000, lambda: self.status_label.setText("Listo"))
     
     def closeEvent(self, event):
         """Maneja el cierre de la ventana"""

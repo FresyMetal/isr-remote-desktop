@@ -33,8 +33,8 @@ class ConnectionCodeManager:
         Detecta automáticamente el servidor de registro
         Usa IP local si está en la misma red, IP pública si está fuera
         """
-        local_server = "http://192.168.0.57:8080"
-        public_server = "http://77.225.201.4:8080"
+        local_server = "http://192.168.0.52:8080"  # Servidor local actualizado
+        public_server = "http://77.225.201.4:8080"  # Servidor público
         
         # Obtener IP local del cliente
         try:

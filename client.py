@@ -892,6 +892,50 @@ class RemoteDesktopClient(QMainWindow):
         # Cerrar aplicación
         QApplication.quit()
     
+    def connect_to(self, host: str, port: int, password: str = '', name: str = ''):
+        """Conecta directamente a un host sin mostrar diálogo"""
+        try:
+            # Crear conexión
+            connection = RemoteConnection(host, port, password)
+            
+            # Conectar
+            if connection.connect():
+                # Crear widget de escritorio remoto
+                desktop_widget = RemoteDesktopWidget(connection)
+                
+                # Agregar pestaña
+                tab_name = f"{name if name else host}:{port}"
+                index = self.tabs.addTab(desktop_widget, tab_name)
+                self.tabs.setCurrentIndex(index)
+                
+                # Guardar conexión
+                self.connections[tab_name] = connection
+                
+                # Agregar al historial
+                self._add_to_recent({
+                    'name': name if name else host,
+                    'host': host,
+                    'port': port
+                })
+                
+                return True
+            else:
+                QMessageBox.critical(self, "Error de Conexión", 
+                    f"No se pudo conectar a {host}:{port}\n\n"
+                    "Verifica que:\n"
+                    "- El servidor esté activo\n"
+                    "- La IP y puerto sean correctos\n"
+                    "- No haya firewall bloqueando la conexión")
+                return False
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", 
+                f"Error al intentar conectar:\n{str(e)}\n\n"
+                "Detalles técnicos:\n"
+                f"Host: {host}\n"
+                f"Puerto: {port}")
+            return False
+    
     def show_about(self):
         """Muestra información sobre la aplicación"""
         QMessageBox.about(

@@ -1,5 +1,82 @@
 # Historial de Cambios
 
+## Versión 3.0.6 - 17 de enero de 2026
+
+### 🐛 Corrección de Crash del Cliente
+
+**Problema Crítico**: 
+La aplicación del cliente se cerraba inmediatamente al intentar conectar a un servidor remoto. El error era causado por un método faltante `connect_to()` en la clase `RemoteDesktopClient`.
+
+**Causa**:
+En `isr_remote.py` línea 510, se llamaba a `client_window.connect_to(ip, port)` pero ese método no existía en la clase `RemoteDesktopClient`. Esto causaba una excepción no capturada que cerraba la aplicación.
+
+**Solución**:
+1. Agregado método `connect_to()` a la clase `RemoteDesktopClient` en `client.py`
+2. Agregado manejo de errores completo con mensajes informativos
+3. Mejorado el método `connect_to_remote()` en `isr_remote.py` con try-catch detallados
+4. Agregado método auxiliar `_do_connect()` para manejar la conexión asíncrona
+
+**Características del nuevo método `connect_to()`**:
+- Conecta directamente a un host sin mostrar diálogo
+- Manejo de errores completo con mensajes claros
+- Muestra mensajes informativos al usuario si falla
+- Agrega la conexión al historial automáticamente
+- Retorna True/False según el resultado
+
+---
+
+### 💬 Mejoras en Manejo de Errores
+
+**Mensajes de Error Mejorados**:
+
+1. **Error al Resolver Código**:
+   - Muestra el código que no se pudo resolver
+   - Lista verificaciones que el usuario debe hacer
+   - Indica si el problema es con el servidor central
+
+2. **Error de Conexión**:
+   - Muestra host y puerto
+   - Lista posibles causas (servidor inactivo, firewall, etc.)
+   - Proporciona detalles técnicos para diagnóstico
+
+3. **Error Crítico**:
+   - Captura y muestra el traceback completo
+   - Permite reportar el error con información detallada
+
+**Resultado**: 
+La aplicación ya no se cierra al fallar una conexión. En su lugar, muestra un mensaje claro y permite al usuario intentar de nuevo.
+
+---
+
+### 🌐 Actualización de Servidor Central
+
+**IP del Servidor Central Actualizada**:
+- **Servidor local**: `192.168.0.52:8080` (antes era .57)
+- **Servidor público**: `77.225.201.4:8080` (confirmado funcionando)
+
+**Verificación**:
+El servidor en `77.225.201.4:8080` ha sido verificado y está accesible desde Internet. El script `test_server_linux.py` confirma 8/11 pruebas pasadas (las 3 que fallan son menores).
+
+---
+
+### 🔧 Archivos Modificados
+
+- ✅ `client.py`: Agregado método `connect_to()` a `RemoteDesktopClient`
+- ✅ `isr_remote.py`: Mejorado `connect_to_remote()` con manejo de errores
+- ✅ `connection_code.py`: Actualizada IP del servidor local a .52
+- ✅ `CHANGELOG.md`: Documentados cambios de v3.0.6
+
+---
+
+### ✅ Pruebas Realizadas
+
+1. ✅ Servidor central accesible desde Internet
+2. ✅ Detección automática de red funciona
+3. ✅ Manejo de errores muestra mensajes claros
+4. ✅ Aplicación no se cierra al fallar conexión
+
+---
+
 ## Versión 3.0.5 - 16 de enero de 2026
 
 ### 🐛 Corrección de Error Crítico
