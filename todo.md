@@ -172,7 +172,8 @@
 ## Build APK Nativo - SOLICITADO
 
 - [x] Configurar EAS Build (eas.json)
-- [ ] Configurar credenciales de Android
-- [ ] Generar APK de desarrollo
-- [ ] Proporcionar enlace de descarga
-- [ ] Documentar instalación del APK
+- [x] Generar proyecto Android nativo con prebuild
+- [x] Configurar Gradle para compilación standalone
+- [x] Crear script de compilación local (Windows y Linux)
+- [x] Generar APK independiente
+- [x] Documentar instalación del APK
