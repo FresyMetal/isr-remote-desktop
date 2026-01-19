@@ -17,6 +17,8 @@ export enum MessageType {
   VIDEO_FRAME = 0x10,
   VIDEO_REQUEST = 0x11,
   VIDEO_CONFIG = 0x12,
+  MONITOR_LIST = 0x13,
+  MONITOR_CHANGE = 0x14,
   INPUT_MOUSE = 0x20,
   INPUT_KEYBOARD = 0x21,
   INPUT_SCROLL = 0x22,
@@ -49,12 +51,21 @@ export interface Frame {
   data: Uint8Array;
 }
 
+export interface Monitor {
+  id: number;
+  name: string;
+  width: number;
+  height: number;
+  isPrimary: boolean;
+}
+
 export interface TCPClientEvents {
   onConnected?: () => void;
   onDisconnected?: () => void;
   onFrame?: (frame: Frame) => void;
   onError?: (error: string) => void;
   onClipboard?: (text: string) => void;
+  onMonitorList?: (monitors: Monitor[]) => void;
 }
 
 export class TCPClient {
@@ -232,6 +243,10 @@ export class TCPClient {
           this.handleClipboard(payload);
           break;
           
+        case MessageType.MONITOR_LIST:
+          this.handleMonitorList(payload);
+          break;
+          
         case MessageType.PONG:
           // Respuesta a ping
           break;
@@ -296,6 +311,44 @@ export class TCPClient {
     }
   }
 
+  private handleMonitorList(payload: Buffer) {
+    try {
+      const monitorCount = payload.readUInt8(0);
+      const monitors: Monitor[] = [];
+      
+      let offset = 1;
+      for (let i = 0; i < monitorCount; i++) {
+        const id = payload.readUInt8(offset);
+        offset += 1;
+        
+        const nameLen = payload.readUInt8(offset);
+        offset += 1;
+        
+        const name = payload.subarray(offset, offset + nameLen).toString('utf-8');
+        offset += nameLen;
+        
+        const width = payload.readUInt32BE(offset);
+        offset += 4;
+        
+        const height = payload.readUInt32BE(offset);
+        offset += 4;
+        
+        const isPrimary = payload.readUInt8(offset) === 1;
+        offset += 1;
+        
+        monitors.push({ id, name, width, height, isPrimary });
+      }
+      
+      console.log(`[TCP] Lista de monitores recibida: ${monitors.length} monitores`);
+      
+      if (this.events.onMonitorList) {
+        this.events.onMonitorList(monitors);
+      }
+    } catch (error) {
+      console.error('[TCP] Error al decodificar lista de monitores:', error);
+    }
+  }
+
   sendMouseEvent(x: number, y: number, buttons: number) {
     if (!this.connected) return;
     
@@ -324,5 +377,25 @@ export class TCPClient {
     
     const message = this.encodeMessage(MessageType.PING, Buffer.alloc(0));
     this.socket.write(message);
+  }
+
+  requestMonitorList() {
+    if (!this.connected) return;
+    
+    // Solicitar lista de monitores al servidor
+    const message = this.encodeMessage(MessageType.MONITOR_LIST, Buffer.alloc(0));
+    this.socket.write(message);
+    console.log('[TCP] Solicitando lista de monitores');
+  }
+
+  changeMonitor(monitorId: number) {
+    if (!this.connected) return;
+    
+    const payload = Buffer.alloc(1);
+    payload.writeUInt8(monitorId, 0);
+    
+    const message = this.encodeMessage(MessageType.MONITOR_CHANGE, payload);
+    this.socket.write(message);
+    console.log(`[TCP] Cambiando a monitor ${monitorId}`);
   }
 }

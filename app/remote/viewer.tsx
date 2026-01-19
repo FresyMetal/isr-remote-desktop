@@ -13,8 +13,9 @@ import { ScreenContainer } from '@/components/screen-container';
 import { RemoteDesktopView } from '@/components/remote-desktop-view';
 import { VirtualKeyboard } from '@/components/virtual-keyboard';
 import { QualitySelector, type VideoQuality } from '@/components/quality-selector';
+import { MonitorSelector } from '@/components/monitor-selector';
 import { useColors } from '@/hooks/use-colors';
-import { TCPClient } from '@/lib/tcp-client';
+import { TCPClient, type Monitor } from '@/lib/tcp-client';
 
 export default function RemoteViewerScreen() {
   const colors = useColors();
@@ -29,8 +30,13 @@ export default function RemoteViewerScreen() {
   // Estados de controles
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showQualitySelector, setShowQualitySelector] = useState(false);
+  const [showMonitorSelector, setShowMonitorSelector] = useState(false);
   const [videoQuality, setVideoQuality] = useState<VideoQuality>('medium');
   const [showControls, setShowControls] = useState(true);
+  
+  // Estado de monitores
+  const [monitors, setMonitors] = useState<Monitor[]>([]);
+  const [currentMonitorId, setCurrentMonitorId] = useState(0);
   
   const clientRef = useRef<TCPClient | null>(null);
   
@@ -130,6 +136,16 @@ export default function RemoteViewerScreen() {
         onClipboard: (text) => {
           console.log('[Viewer] Clipboard actualizado:', text.substring(0, 50));
         },
+        
+        onMonitorList: (monitorList) => {
+          console.log('[Viewer] Lista de monitores recibida:', monitorList);
+          setMonitors(monitorList);
+          // Establecer el monitor principal como actual
+          const primary = monitorList.find(m => m.isPrimary);
+          if (primary) {
+            setCurrentMonitorId(primary.id);
+          }
+        },
       });
       
       clientRef.current = client;
@@ -140,6 +156,11 @@ export default function RemoteViewerScreen() {
       if (!connected) {
         throw new Error('No se pudo establecer la conexión');
       }
+      
+      // Solicitar lista de monitores después de conectar
+      setTimeout(() => {
+        client.requestMonitorList();
+      }, 1000);
       
       // Esperar hasta 10 segundos para recibir el primer frame
       let timeout = setTimeout(() => {
@@ -193,6 +214,15 @@ export default function RemoteViewerScreen() {
     // TODO: Enviar mensaje al servidor para cambiar calidad
     console.log('[Viewer] Calidad cambiada a:', quality);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+  
+  function handleMonitorChange(monitorId: number) {
+    if (clientRef.current) {
+      clientRef.current.changeMonitor(monitorId);
+      setCurrentMonitorId(monitorId);
+      console.log('[Viewer] Monitor cambiado a:', monitorId);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   }
   
   function toggleControls() {
@@ -311,6 +341,15 @@ export default function RemoteViewerScreen() {
                 <Text className="text-white font-semibold text-center">🎨 Calidad</Text>
               </TouchableOpacity>
               
+              {monitors.length > 1 && (
+                <TouchableOpacity
+                  onPress={() => setShowMonitorSelector(true)}
+                  className="bg-primary px-4 py-2 rounded-full flex-1"
+                >
+                  <Text className="text-white font-semibold text-center">🖥️ Monitor</Text>
+                </TouchableOpacity>
+              )}
+              
               <TouchableOpacity
                 onPress={handleDisconnect}
                 className="bg-error px-4 py-2 rounded-full"
@@ -333,6 +372,15 @@ export default function RemoteViewerScreen() {
             onQualityChange={handleQualityChange}
             visible={showQualitySelector}
             onClose={() => setShowQualitySelector(false)}
+          />
+          
+          {/* Selector de monitores */}
+          <MonitorSelector
+            monitors={monitors}
+            currentMonitorId={currentMonitorId}
+            onMonitorChange={handleMonitorChange}
+            visible={showMonitorSelector}
+            onClose={() => setShowMonitorSelector(false)}
           />
         </View>
       </ScreenContainer>

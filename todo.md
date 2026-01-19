@@ -152,3 +152,11 @@
 
 **Creado**: 17 de enero de 2026  
 **Última actualización**: 17 de enero de 2026
+
+## Selector de Monitores - SOLICITADO
+
+- [x] Actualizar protocolo TCP con mensajes de monitores
+- [x] Crear componente MonitorSelector en la app móvil
+- [x] Actualizar servidor Python para detectar monitores
+- [x] Implementar cambio de monitor en tiempo real
+- [x] Agregar botón de selector de monitores en la barra de controles
