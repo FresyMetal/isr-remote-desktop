@@ -11,9 +11,10 @@ import { TCPClient, type Frame } from '@/lib/tcp-client';
 interface RemoteDesktopViewProps {
   client: TCPClient;
   onDisconnect?: () => void;
+  onEdgeSwipe?: () => void;
 }
 
-export function RemoteDesktopView({ client, onDisconnect }: RemoteDesktopViewProps) {
+export function RemoteDesktopView({ client, onDisconnect, onEdgeSwipe }: RemoteDesktopViewProps) {
   const [frameUri, setFrameUri] = useState<string | null>(null);
   const [desktopSize, setDesktopSize] = useState({ width: 1920, height: 1080 });
   const screenSize = Dimensions.get('window');
@@ -171,8 +172,21 @@ export function RemoteDesktopView({ client, onDisconnect }: RemoteDesktopViewPro
       setScale(newScale);
     });
   
+  // Gesto de deslizar desde borde derecho (para salir del modo kiosko)
+  const edgeSwipeGesture = Gesture.Pan()
+    .minPointers(1)
+    .maxPointers(1)
+    .onStart((event) => {
+      // Solo activar si empieza desde el borde derecho
+      if (event.x > screenSize.width - 50 && onEdgeSwipe) {
+        onEdgeSwipe();
+      }
+    })
+    .enabled(!!onEdgeSwipe);
+  
   // Combinar gestos
   const composedGesture = Gesture.Race(
+    edgeSwipeGesture,
     longPressGesture,
     Gesture.Exclusive(
       pinchGesture,

@@ -177,3 +177,12 @@
 - [x] Crear script de compilación local (Windows y Linux)
 - [x] Generar APK independiente
 - [x] Documentar instalación del APK
+
+## Modo Kiosko - SOLICITADO
+
+- [x] Implementar estado de modo kiosko en viewer
+- [x] Ocultar barra de estado y navegación en modo kiosko
+- [x] Ocultar todos los controles permanentemente
+- [x] Agregar botón para activar/desactivar modo kiosko
+- [x] Implementar gesto de deslizar desde borde para salir
+- [x] Optimizar visualización para uso como monitor secundario

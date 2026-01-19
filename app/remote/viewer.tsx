@@ -4,10 +4,12 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity, BackHandler } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, TouchableOpacity, BackHandler, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import * as KeepAwake from 'expo-keep-awake';
+import { useKeepAwake } from 'expo-keep-awake';
+import * as NavigationBar from 'expo-navigation-bar';
+import { StatusBar } from 'expo-status-bar';
 
 import { ScreenContainer } from '@/components/screen-container';
 import { RemoteDesktopView } from '@/components/remote-desktop-view';
@@ -35,6 +37,7 @@ export default function RemoteViewerScreen() {
   const [showClipboardControl, setShowClipboardControl] = useState(false);
   const [videoQuality, setVideoQuality] = useState<VideoQuality>('medium');
   const [showControls, setShowControls] = useState(true);
+  const [kioskMode, setKioskMode] = useState(false);
   
   // Estado de monitores
   const [monitors, setMonitors] = useState<Monitor[]>([]);
@@ -58,15 +61,38 @@ export default function RemoteViewerScreen() {
   }, [showControls, isConnected]);
   
   // Mantener pantalla encendida mientras está conectado
-  useEffect(() => {
-    if (isConnected) {
-      KeepAwake.activateKeepAwakeAsync();
+  useKeepAwake();
+  
+  // Activar modo kiosko
+  async function activateKioskMode() {
+    setKioskMode(true);
+    setShowControls(false);
+    
+    // Ocultar barra de navegación en Android
+    if (Platform.OS === 'android') {
+      await NavigationBar.setVisibilityAsync('hidden');
+      await NavigationBar.setBehaviorAsync('overlay-swipe');
     }
     
-    return () => {
-      KeepAwake.deactivateKeepAwake();
-    };
-  }, [isConnected]);
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }
+  
+  // Desactivar modo kiosko
+  async function deactivateKioskMode() {
+    setKioskMode(false);
+    setShowControls(true);
+    
+    // Mostrar barra de navegación en Android
+    if (Platform.OS === 'android') {
+      await NavigationBar.setVisibilityAsync('visible');
+    }
+    
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  }
   
   // Manejar botón atrás de Android
   useEffect(() => {
@@ -272,7 +298,10 @@ export default function RemoteViewerScreen() {
   // Pantalla de error
   if (error) {
     return (
-      <ScreenContainer className="items-center justify-center p-6">
+      <ScreenContainer className="p-0">
+        {/* StatusBar - oculta en modo kiosko */}
+        <StatusBar hidden={kioskMode} style="light" />
+        <View className="flex-1 items-center justify-center p-6">
         <Text className="text-6xl mb-4">❌</Text>
         <Text className="text-2xl font-bold text-foreground mb-2">
           Error de Conexión
@@ -304,6 +333,7 @@ export default function RemoteViewerScreen() {
           <Text className="text-sm text-muted">• Estés en la misma red WiFi</Text>
           <Text className="text-sm text-muted">• No haya firewall bloqueando</Text>
         </View>
+        </View>
       </ScreenContainer>
     );
   }
@@ -312,6 +342,8 @@ export default function RemoteViewerScreen() {
   if (isConnected && clientRef.current) {
     return (
       <ScreenContainer edges={["top", "bottom", "left", "right"]}>
+        {/* StatusBar - oculta en modo kiosko */}
+        <StatusBar hidden={kioskMode} style="light" />
         <View className="flex-1">
           {/* Visor del escritorio remoto */}
           <TouchableOpacity 
@@ -322,11 +354,12 @@ export default function RemoteViewerScreen() {
             <RemoteDesktopView 
               client={clientRef.current}
               onDisconnect={handleDisconnect}
+              onEdgeSwipe={kioskMode ? deactivateKioskMode : undefined}
             />
           </TouchableOpacity>
           
-          {/* Barra de controles superior */}
-          {showControls && (
+          {/* Barra de controles superior - ocultos en modo kiosko */}
+          {showControls && !kioskMode && (
             <View 
               className="absolute top-8 left-4 right-4 flex-row gap-2"
               style={{
@@ -365,6 +398,13 @@ export default function RemoteViewerScreen() {
                 className="bg-primary px-4 py-2 rounded-full flex-1"
               >
                 <Text className="text-white font-semibold text-center">📋 Portap.</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={activateKioskMode}
+                className="bg-success px-4 py-2 rounded-full flex-1"
+              >
+                <Text className="text-white font-semibold text-center">🖥️ Kiosko</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
