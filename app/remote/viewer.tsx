@@ -1,6 +1,6 @@
 /**
  * Pantalla de Visor de Escritorio Remoto
- * Conecta al servidor TCP y muestra el escritorio remoto
+ * Conecta al servidor TCP y muestra el escritorio remoto con controles avanzados
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -11,6 +11,8 @@ import * as KeepAwake from 'expo-keep-awake';
 
 import { ScreenContainer } from '@/components/screen-container';
 import { RemoteDesktopView } from '@/components/remote-desktop-view';
+import { VirtualKeyboard } from '@/components/virtual-keyboard';
+import { QualitySelector, type VideoQuality } from '@/components/quality-selector';
 import { useColors } from '@/hooks/use-colors';
 import { TCPClient } from '@/lib/tcp-client';
 
@@ -24,7 +26,24 @@ export default function RemoteViewerScreen() {
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState('Conectando...');
   
+  // Estados de controles
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [showQualitySelector, setShowQualitySelector] = useState(false);
+  const [videoQuality, setVideoQuality] = useState<VideoQuality>('medium');
+  const [showControls, setShowControls] = useState(true);
+  
   const clientRef = useRef<TCPClient | null>(null);
+  
+  // Ocultar controles automáticamente después de 3 segundos
+  useEffect(() => {
+    if (!showControls || !isConnected) return;
+    
+    const timer = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [showControls, isConnected]);
   
   // Mantener pantalla encendida mientras está conectado
   useEffect(() => {
@@ -169,6 +188,18 @@ export default function RemoteViewerScreen() {
     connectToServer();
   }
   
+  function handleQualityChange(quality: VideoQuality) {
+    setVideoQuality(quality);
+    // TODO: Enviar mensaje al servidor para cambiar calidad
+    console.log('[Viewer] Calidad cambiada a:', quality);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+  
+  function toggleControls() {
+    setShowControls(prev => !prev);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+  
   // Pantalla de conexión
   if (isConnecting) {
     return (
@@ -243,16 +274,21 @@ export default function RemoteViewerScreen() {
       <ScreenContainer edges={["top", "bottom", "left", "right"]}>
         <View className="flex-1">
           {/* Visor del escritorio remoto */}
-          <RemoteDesktopView 
-            client={clientRef.current}
-            onDisconnect={handleDisconnect}
-          />
+          <TouchableOpacity 
+            activeOpacity={1} 
+            onPress={toggleControls}
+            style={{ flex: 1 }}
+          >
+            <RemoteDesktopView 
+              client={clientRef.current}
+              onDisconnect={handleDisconnect}
+            />
+          </TouchableOpacity>
           
-          {/* Botón flotante de desconexión */}
-          <View className="absolute top-12 right-4">
-            <TouchableOpacity
-              onPress={handleDisconnect}
-              className="bg-error px-4 py-2 rounded-full shadow-lg"
+          {/* Barra de controles superior */}
+          {showControls && (
+            <View 
+              className="absolute top-8 left-4 right-4 flex-row gap-2"
               style={{
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
@@ -261,9 +297,43 @@ export default function RemoteViewerScreen() {
                 elevation: 5,
               }}
             >
-              <Text className="text-white font-semibold">✕ Desconectar</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                onPress={() => setShowKeyboard(true)}
+                className="bg-primary px-4 py-2 rounded-full flex-1"
+              >
+                <Text className="text-white font-semibold text-center">⌨️ Teclado</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => setShowQualitySelector(true)}
+                className="bg-primary px-4 py-2 rounded-full flex-1"
+              >
+                <Text className="text-white font-semibold text-center">🎨 Calidad</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleDisconnect}
+                className="bg-error px-4 py-2 rounded-full"
+              >
+                <Text className="text-white font-semibold">✕</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          {/* Teclado virtual */}
+          <VirtualKeyboard
+            client={clientRef.current}
+            visible={showKeyboard}
+            onClose={() => setShowKeyboard(false)}
+          />
+          
+          {/* Selector de calidad */}
+          <QualitySelector
+            currentQuality={videoQuality}
+            onQualityChange={handleQualityChange}
+            visible={showQualitySelector}
+            onClose={() => setShowQualitySelector(false)}
+          />
         </View>
       </ScreenContainer>
     );

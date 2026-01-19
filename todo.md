@@ -17,25 +17,25 @@
 - [x] Implementar detección de IP directa vs código ISR
 - [x] Agregar manejo de errores de resolución
 
-### Conexión WebSocket
-- [ ] Crear módulo `websocket-client.ts`
-- [ ] Implementar conexión WebSocket al servidor remoto
-- [ ] Implementar handshake con el servidor
-- [ ] Manejar estados de conexión (conectando, conectado, error)
-- [ ] Implementar reconexión automática (3 intentos)
-- [ ] Agregar timeout de conexión (10 segundos)
+### Conexión TCP
+- [x] Crear módulo `tcp-client.ts`
+- [x] Implementar conexión TCP al servidor remoto
+- [x] Implementar handshake con el servidor
+- [x] Manejar estados de conexión (conectando, conectado, error)
+- [x] Implementar reconexión automática
+- [x] Agregar timeout de conexión (10 segundos)
 
 ### Visualización del Escritorio Remoto
-- [ ] Crear componente `remote-viewer.tsx`
-- [ ] Implementar recepción de frames de video (JPEG)
-- [ ] Decodificar y mostrar frames en tiempo real
-- [ ] Implementar escalado de imagen para ajustar a pantalla
+- [x] Crear componente `remote-desktop-view.tsx`
+- [x] Implementar recepción de frames de video (JPEG)
+- [x] Decodificar y mostrar frames en tiempo real
+- [x] Implementar escalado de imagen para ajustar a pantalla
 - [ ] Optimizar rendimiento para 30+ FPS
 
 ### Controles Táctiles Básicos
-- [ ] Implementar detección de toque simple (clic izquierdo)
-- [ ] Calcular coordenadas relativas del toque
-- [ ] Enviar eventos de ratón al servidor
+- [x] Implementar detección de toque simple (clic izquierdo)
+- [x] Calcular coordenadas relativas del toque
+- [x] Enviar eventos de ratón al servidor
 - [ ] Implementar feedback visual al tocar
 
 ### Historial de Conexiones
@@ -56,18 +56,18 @@
 ## 🚀 Fase 2 (Mejoras)
 
 ### Gestos Avanzados
-- [ ] Implementar toque prolongado (clic derecho)
-- [ ] Implementar arrastrar (mover ratón)
-- [ ] Implementar scroll con dos dedos
-- [ ] Implementar zoom con pellizco
+- [x] Implementar toque prolongado (clic derecho) - SOLICITADO
+- [x] Implementar arrastrar (mover ratón)
+- [x] Implementar scroll con dos dedos - SOLICITADO
+- [x] Implementar zoom con pellizco - SOLICITADO
 - [ ] Implementar doble toque (doble clic)
 
 ### Teclado Virtual
-- [ ] Crear componente `virtual-keyboard.tsx`
-- [ ] Mostrar/ocultar teclado nativo de Android
-- [ ] Enviar teclas al servidor en tiempo real
+- [x] Crear componente `virtual-keyboard.tsx` - SOLICITADO
+- [x] Mostrar/ocultar teclado nativo de Android - SOLICITADO
+- [x] Enviar teclas al servidor en tiempo real - SOLICITADO
+- [x] Soportar flechas y teclas de función
 - [ ] Soportar teclas especiales (Ctrl, Alt, Shift)
-- [ ] Soportar flechas y teclas de función
 
 ### Menú de Opciones
 - [ ] Crear overlay de menú de opciones
@@ -78,7 +78,7 @@
 
 ### Calidad de Imagen
 - [ ] Implementar detección automática de calidad (WiFi/4G/3G)
-- [ ] Agregar selector manual de calidad
+- [x] Agregar selector manual de calidad (Baja/Media/Alta) - SOLICITADO
 - [ ] Implementar ajuste de FPS según calidad
 - [ ] Optimizar uso de ancho de banda
 
