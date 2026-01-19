@@ -19,6 +19,7 @@ export default function HomeScreen() {
   const router = useRouter();
   
   const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [recentConnections, setRecentConnections] = useState<RecentConnection[]>([]);
   const [isLoadingRecent, setIsLoadingRecent] = useState(true);
@@ -81,6 +82,7 @@ export default function HomeScreen() {
           host: result.host,
           port: result.port.toString(),
           code: codeOrIP,
+          password: password,
         },
       });
     } catch (error) {
@@ -139,6 +141,24 @@ export default function HomeScreen() {
               placeholderTextColor={colors.muted}
               autoCapitalize="none"
               autoCorrect={false}
+              editable={!isConnecting}
+              returnKeyType="done"
+              onSubmitEditing={() => handleConnect(code)}
+              className="bg-surface border-2 border-border rounded-xl px-4 py-4 text-lg text-foreground"
+              style={{
+                borderColor: colors.border,
+                color: colors.foreground,
+              }}
+            />
+            
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Contraseña (opcional)"
+              placeholderTextColor={colors.muted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
               editable={!isConnecting}
               returnKeyType="done"
               onSubmitEditing={() => handleConnect(code)}

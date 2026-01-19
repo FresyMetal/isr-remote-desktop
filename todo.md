@@ -186,3 +186,19 @@
 - [x] Agregar botón para activar/desactivar modo kiosko
 - [x] Implementar gesto de deslizar desde borde para salir
 - [x] Optimizar visualización para uso como monitor secundario
+
+## Autenticación con Contraseña - SOLICITADO
+
+- [x] Revisar implementación de contraseña en servidor Python
+- [x] Agregar campo de contraseña en pantalla de conexión móvil
+- [x] Actualizar protocolo TCP para enviar contraseña en handshake
+- [x] Validar contraseña en servidor antes de permitir conexión
+- [x] Mostrar error claro si la contraseña es incorrecta
+
+## Logotipo Personalizado - SOLICITADO
+
+- [ ] Generar logotipo personalizado para ISR Remote Desktop
+- [ ] Actualizar app.config.ts con URL del logotipo
+- [ ] Copiar logotipo a assets/images/icon.png
+- [ ] Actualizar splash screen y favicon
+- [ ] Actualizar nombre de la app si es necesario

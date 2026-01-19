@@ -72,14 +72,17 @@ export class TCPClient {
   private socket: any = null;
   private host: string;
   private port: number;
+  private password: string;
   private events: TCPClientEvents;
   private sequenceNumber: number = 0;
   private buffer: Buffer = Buffer.alloc(0);
   private connected: boolean = false;
+  private awaitingAuth: boolean = false;
 
-  constructor(host: string, port: number, events: TCPClientEvents) {
+  constructor(host: string, port: number, password: string, events: TCPClientEvents) {
     this.host = host;
     this.port = port;
+    this.password = password;
     this.events = events;
   }
 
@@ -159,14 +162,32 @@ export class TCPClient {
   }
 
   private sendHandshake() {
-    // Handshake: version (1 byte) + capabilities (4 bytes)
-    const payload = Buffer.alloc(5);
-    payload.writeUInt8(1, 0); // version = 1
-    payload.writeUInt32BE(0, 1); // capabilities = 0
+    // Handshake: version (4 bytes) + capabilities (4 bytes)
+    const payload = Buffer.alloc(8);
+    payload.writeUInt32BE(1, 0); // version = 1
+    payload.writeUInt32BE(0, 4); // capabilities = 0
     
     const message = this.encodeMessage(MessageType.HANDSHAKE, payload);
     this.socket.write(message);
     console.log('[TCP] Handshake enviado');
+    
+    // Si hay contraseña, marcar que esperamos AUTH_RESPONSE
+    if (this.password) {
+      this.awaitingAuth = true;
+    }
+  }
+  
+  private sendAuthRequest() {
+    if (!this.password) return;
+    
+    const passwordBytes = Buffer.from(this.password, 'utf-8');
+    const payload = Buffer.alloc(4 + passwordBytes.length);
+    payload.writeUInt32BE(passwordBytes.length, 0);
+    passwordBytes.copy(payload, 4);
+    
+    const message = this.encodeMessage(MessageType.AUTH_REQUEST, payload);
+    this.socket.write(message);
+    console.log('[TCP] AUTH_REQUEST enviado');
   }
 
   private encodeMessage(msgType: MessageType, payload: Buffer): Buffer {
@@ -266,8 +287,18 @@ export class TCPClient {
     
     console.log(`[TCP] Auth response: ${success ? 'OK' : 'FAIL'} - ${message}`);
     
-    if (!success && this.events.onError) {
-      this.events.onError(`Autenticación fallida: ${message}`);
+    if (!success) {
+      if (this.events.onError) {
+        this.events.onError(`Autenticación fallida: ${message}`);
+      }
+      this.disconnect();
+      return;
+    }
+    
+    // Si estamos esperando autenticación y fue exitosa, enviar AUTH_REQUEST
+    if (this.awaitingAuth && this.password) {
+      this.awaitingAuth = false;
+      this.sendAuthRequest();
     }
   }
 

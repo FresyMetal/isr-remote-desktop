@@ -23,7 +23,7 @@ import { TCPClient, type Monitor } from '@/lib/tcp-client';
 export default function RemoteViewerScreen() {
   const colors = useColors();
   const router = useRouter();
-  const params = useLocalSearchParams<{ host: string; port: string; code: string }>();
+  const params = useLocalSearchParams<{ host: string; port: string; code: string; password?: string }>();
   
   const [isConnecting, setIsConnecting] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
@@ -133,7 +133,8 @@ export default function RemoteViewerScreen() {
       }
       
       // Crear cliente TCP
-      const client = new TCPClient(host, port, {
+      const password = params.password || '';
+      const client = new TCPClient(host, port, password, {
         onConnected: () => {
           console.log('[Viewer] Conectado al servidor');
           setStatusMessage('Autenticando...');
