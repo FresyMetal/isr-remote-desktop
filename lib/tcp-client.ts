@@ -398,4 +398,17 @@ export class TCPClient {
     this.socket.write(message);
     console.log(`[TCP] Cambiando a monitor ${monitorId}`);
   }
+
+  sendClipboard(text: string) {
+    if (!this.connected) return;
+    
+    const textBytes = Buffer.from(text, 'utf-8');
+    const payload = Buffer.alloc(4 + textBytes.length);
+    payload.writeUInt32BE(textBytes.length, 0);
+    textBytes.copy(payload, 4);
+    
+    const message = this.encodeMessage(MessageType.CLIPBOARD_TEXT, payload);
+    this.socket.write(message);
+    console.log(`[TCP] Portapapeles enviado: ${text.substring(0, 50)}...`);
+  }
 }

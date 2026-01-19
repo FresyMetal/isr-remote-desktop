@@ -160,3 +160,19 @@
 - [x] Actualizar servidor Python para detectar monitores
 - [x] Implementar cambio de monitor en tiempo real
 - [x] Agregar botón de selector de monitores en la barra de controles
+
+## Portapapeles Bidireccional - SOLICITADO
+
+- [x] Implementar sincronización automática móvil → PC
+- [x] Implementar recepción PC → móvil
+- [x] Agregar notificación visual al sincronizar
+- [x] Agregar botones manuales de copiar/pegar
+- [x] Probar sincronización bidireccional
+
+## Build APK Nativo - SOLICITADO
+
+- [x] Configurar EAS Build (eas.json)
+- [ ] Configurar credenciales de Android
+- [ ] Generar APK de desarrollo
+- [ ] Proporcionar enlace de descarga
+- [ ] Documentar instalación del APK

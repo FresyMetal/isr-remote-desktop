@@ -14,6 +14,7 @@ import { RemoteDesktopView } from '@/components/remote-desktop-view';
 import { VirtualKeyboard } from '@/components/virtual-keyboard';
 import { QualitySelector, type VideoQuality } from '@/components/quality-selector';
 import { MonitorSelector } from '@/components/monitor-selector';
+import { ClipboardControl } from '@/components/clipboard-control';
 import { useColors } from '@/hooks/use-colors';
 import { TCPClient, type Monitor } from '@/lib/tcp-client';
 
@@ -31,12 +32,17 @@ export default function RemoteViewerScreen() {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [showQualitySelector, setShowQualitySelector] = useState(false);
   const [showMonitorSelector, setShowMonitorSelector] = useState(false);
+  const [showClipboardControl, setShowClipboardControl] = useState(false);
   const [videoQuality, setVideoQuality] = useState<VideoQuality>('medium');
   const [showControls, setShowControls] = useState(true);
   
   // Estado de monitores
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [currentMonitorId, setCurrentMonitorId] = useState(0);
+  
+  // Estado de portapapeles
+  const [clipboardText, setClipboardText] = useState('');
+  const [showClipboardNotification, setShowClipboardNotification] = useState(false);
   
   const clientRef = useRef<TCPClient | null>(null);
   
@@ -134,7 +140,11 @@ export default function RemoteViewerScreen() {
         },
         
         onClipboard: (text) => {
-          console.log('[Viewer] Clipboard actualizado:', text.substring(0, 50));
+          console.log('[Viewer] Portapapeles del PC actualizado:', text.substring(0, 50));
+          setClipboardText(text);
+          // Mostrar notificación
+          setShowClipboardNotification(true);
+          setTimeout(() => setShowClipboardNotification(false), 2000);
         },
         
         onMonitorList: (monitorList) => {
@@ -351,6 +361,13 @@ export default function RemoteViewerScreen() {
               )}
               
               <TouchableOpacity
+                onPress={() => setShowClipboardControl(true)}
+                className="bg-primary px-4 py-2 rounded-full flex-1"
+              >
+                <Text className="text-white font-semibold text-center">📋 Portap.</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
                 onPress={handleDisconnect}
                 className="bg-error px-4 py-2 rounded-full"
               >
@@ -382,6 +399,32 @@ export default function RemoteViewerScreen() {
             visible={showMonitorSelector}
             onClose={() => setShowMonitorSelector(false)}
           />
+          
+          {/* Control de portapapeles */}
+          <ClipboardControl
+            client={clientRef.current}
+            pcClipboard={clipboardText}
+            visible={showClipboardControl}
+            onClose={() => setShowClipboardControl(false)}
+          />
+          
+          {/* Notificación de portapapeles actualizado */}
+          {showClipboardNotification && (
+            <View 
+              className="absolute top-20 left-4 right-4 bg-success px-4 py-3 rounded-xl flex-row items-center"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}
+            >
+              <Text className="text-white text-base font-semibold">
+                📋 Portapapeles actualizado desde el PC
+              </Text>
+            </View>
+          )}
         </View>
       </ScreenContainer>
     );
