@@ -197,8 +197,8 @@
 
 ## Logotipo Personalizado - SOLICITADO
 
-- [ ] Generar logotipo personalizado para ISR Remote Desktop
-- [ ] Actualizar app.config.ts con URL del logotipo
-- [ ] Copiar logotipo a assets/images/icon.png
-- [ ] Actualizar splash screen y favicon
-- [ ] Actualizar nombre de la app si es necesario
+- [x] Generar logotipo personalizado para ISR Remote Desktop
+- [x] Actualizar app.config.ts con URL del logotipo
+- [x] Copiar logotipo a assets/images/icon.png
+- [x] Actualizar splash screen y favicon
+- [x] Actualizar nombre de la app si es necesario
